@@ -1,0 +1,115 @@
+import numpy as np
+import pgmpy
+import networkx as nx
+import matplotlib.pyplot as plt
+from pgmpy.estimators import HillClimbSearch
+import pandas as pd
+import scipy.io
+
+## Load the .mat file 
+mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV_calib_ds1a.mat",struct_as_record=False, squeeze_me=True)
+
+## Extract sampling frequency and store it.
+## Sampling frequency = 100 Hz.
+sf=mat["nfo"].fs
+print(sf)
+
+##stores the eeg data of shape (190594, 59)
+## No. of samples = 1,90,594
+## No. of channels = 59
+cnt=mat["cnt"]
+print(mat["cnt"])
+
+##extract the no of samples before each trial to elimate the data between the interleaved period
+## Extract the sample IDs of the cues.
+po=mat["mrk"].pos
+
+##extract the channel names from the data and store it
+##No of channel name = 59
+clab=mat["nfo"].clab
+print((mat["nfo"].clab))
+
+##calculate the no of samples taken
+print(type(cnt))
+ns=cnt.shape[0]
+print(ns)
+
+# # Calculate time at which each sample is taken or sampling time
+time=np.arange(ns)/sf
+print(time)
+print(type(time))
+
+## make an numpy array of required column names
+## Reruried column name include 59 channels name, time and motor imagery
+cl=np.insert(clab,[0,clab.shape[0]],["Time","MI"])
+print(cl)
+
+##extract the type of motor imagery chosen by the subject
+cs=mat["nfo"].classes
+
+##access field names in mrk to understand its structure
+print(mat["mrk"]._fieldnames)
+
+##extract the y position of electrode to classify data according to motor imagery
+yl=mat["mrk"].y
+
+##constructing motor imagery column in data frame to understand which task is performed 
+mi=[]
+poo=np.append(po, mat["cnt"].shape[0]+1)
+i=0
+j=0
+z=0
+while i < mat["cnt"].shape[0]:
+    if i>=poo[j] :
+        if yl[j] == -1:
+              cls = cs[0]
+        elif yl[j]==1:
+              cls = cs[1]
+        
+        if cls == 'left':
+            for k in range(0,(4*sf),1):
+               mi.append(2)
+        elif cls == 'right':
+            for k in range(0,(4*sf),1):
+               mi.append(3)
+        elif cls=='foot':
+            for k in range(0,(4*sf),1):
+               mi.append(4)
+        print(poo[j])
+        j=j+1
+        i=i+int(4*sf)
+    else:
+            mi.append(1)
+            i=i+1
+mic=np.array(mi)
+
+#combine time , eeg data and motor imagery data together
+dt=np.column_stack((time,cnt,mic))
+print(dt)
+
+#creating the data frame 
+df=pd.DataFrame(dt,index=None,columns=cl)
+print(df)
+
+## extract the eeg data where motor imagery is left(2)
+ndf=df[df["MI"]==2]
+
+# ## remove mi column to prevent it from becoming node in dag
+# ndf = ndf.drop(["MI"], axis=1)
+    
+##apply  hillclimb search on left mi data
+hc2 = HillClimbSearch(data=df,use_cache=True)
+
+# #apply estimation function to find the best network structure of left mi
+bm2 = hc2.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
+print(bm2.edges()) 
+
+# #drawing and saving the network structure
+# # Create a NetworkX DiGraph from the edges of your model
+G = nx.DiGraph(bm2.edges())
+pos = nx.spring_layout(G,k=1.5)  
+plt.figure(figsize=(10000, 10000)) 
+nx.draw(G, pos, with_labels=True, arrows=True)
+plt.savefig("network of 1a for left hand.png")
+plt.savefig("networkof 1a for left hand.svg")
+plt.show()
