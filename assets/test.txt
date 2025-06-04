@@ -14,7 +14,6 @@ mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV
 sf=mat["nfo"].fs
 print(sf)
 
-
 ##stores the eeg data of shape (190594, 59)
 ## No. of samples = 1,90,594
 ## No. of channels = 59
@@ -95,25 +94,81 @@ print(dt)
 df=pd.DataFrame(dt,index=None,columns=cl)
 print(df)
 
-###............for left hand mi.............
+###.........................for left hand mi...........................
+
 ## extract the eeg data where motor imagery is left(2)
 ndf2=df[df["MI"]==2]
 
-# ## remove mi column to prevent it from becoming node in dag
-# ndf = ndf.drop(["MI"], axis=1)
-    
+## remove mi column to prevent it from becoming node in dag
+ndf2 = ndf2.drop(["MI"], axis=1)
+
 ##apply  hillclimb search on left mi data
 hc2 = HillClimbSearch(data=ndf2,use_cache=True)
 
 # #apply estimation function to find the best network structure of left mi
 bm2 = hc2.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
 print(bm2.edges()) 
+bm2e=np.array(bm2.edges())
 
 # #drawing and saving the network structure
 # # Create a NetworkX DiGraph from the edges of your model
 G = nx.DiGraph(bm2.edges())
-pos = nx.spring_layout(G,k=1.5)   
+pos = nx.spring_layout(G,k=1.5)  
 nx.draw(G, pos, with_labels=True, arrows=True)
-plt.savefig("network of 1a for left hand.png")
-plt.savefig("networkof 1a for left hand.svg")
+plt.savefig("network of calib 1a for left hand.png")
+plt.savefig("network of calib 1a for left hand.svg")
+plt.show()
+
+
+##.....................for foot mi.................
+
+## extract the eeg data where motor imagery is foot(4)
+ndf4=df[df["MI"]==4]
+
+## remove mi column to prevent it from becoming node in dag as it is constant
+ndf4 = ndf4.drop(["MI"], axis=1)
+
+##apply  hillclimb search on left mi data
+hc4 = HillClimbSearch(data=ndf4,use_cache=True)
+
+# #apply estimation function to find the best network structure of left mi
+bm4 = hc4.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
+print(bm4.edges()) 
+bm4e=np.array(bm4.edges())
+
+# #drawing and saving the network structure
+# # Create a NetworkX DiGraph from the edges of your model
+G = nx.DiGraph(bm4.edges())
+pos = nx.spring_layout(G,k=1.5)  
+# plt.figure(figsize=(10000, 10000)) 
+nx.draw(G, pos, with_labels=True, arrows=True)
+plt.savefig("network of 1a for foot.png")
+plt.savefig("networkof 1a for foot.svg")
+plt.show()
+
+
+##.....................for rest.................
+
+## extract the eeg data where motor imagery is foot(4)
+ndf1=df[df["MI"]==1]
+
+## remove mi column to prevent it from becoming node in dag and error during the development of bayesian network
+ndf1 = ndf1.drop(["MI"], axis=1)
+
+##apply  hillclimb search on left mi data
+hc1 = HillClimbSearch(data=ndf1,use_cache=True)
+
+# #apply estimation function to find the best network structure of left mi
+bm1 = hc1.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
+print(bm1.edges()) 
+bm1e=np.array(bm1.edges())
+
+# #drawing and saving the network structure
+# # Create a NetworkX DiGraph from the edges of your model
+G = nx.DiGraph(bm1.edges())
+pos = nx.spring_layout(G,k=1.5)  
+# plt.figure(figsize=(10000, 10000)) 
+nx.draw(G, pos, with_labels=True, arrows=True)
+plt.savefig("network of 1a for rest.png")
+plt.savefig("networkof 1a for rest.svg")
 plt.show()
