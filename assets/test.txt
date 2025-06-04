@@ -14,11 +14,15 @@ mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV
 sf=mat["nfo"].fs
 print(sf)
 
+
 ##stores the eeg data of shape (190594, 59)
 ## No. of samples = 1,90,594
 ## No. of channels = 59
-cnt=mat["cnt"]
+cn=mat["cnt"]
 print(mat["cnt"])
+
+## convert eeg data into uV
+cnt=0.1*cn
 
 ##extract the no of samples before each trial to elimate the data between the interleaved period
 ## Extract the sample IDs of the cues.
