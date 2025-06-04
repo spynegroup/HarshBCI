@@ -128,10 +128,10 @@ ndf4=df[df["MI"]==4]
 ## remove mi column to prevent it from becoming node in dag as it is constant
 ndf4 = ndf4.drop(["MI"], axis=1)
 
-##apply  hillclimb search on left mi data
+##apply  hillclimb search on foot mi data
 hc4 = HillClimbSearch(data=ndf4,use_cache=True)
 
-# #apply estimation function to find the best network structure of left mi
+# #apply estimation function to find the best network structure of foot mi
 bm4 = hc4.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
 print(bm4.edges()) 
 bm4e=np.array(bm4.edges())
@@ -149,16 +149,16 @@ plt.show()
 
 ##.....................for rest.................
 
-## extract the eeg data where motor imagery is foot(4)
+## extract the eeg data where subject is not doing any mi(rest)
 ndf1=df[df["MI"]==1]
 
 ## remove mi column to prevent it from becoming node in dag and error during the development of bayesian network
 ndf1 = ndf1.drop(["MI"], axis=1)
 
-##apply  hillclimb search on left mi data
+##apply  hillclimb search on rest data
 hc1 = HillClimbSearch(data=ndf1,use_cache=True)
 
-# #apply estimation function to find the best network structure of left mi
+# #apply estimation function to find the best network structure of rest
 bm1 = hc1.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
 print(bm1.edges()) 
 bm1e=np.array(bm1.edges())
