@@ -95,14 +95,15 @@ print(dt)
 df=pd.DataFrame(dt,index=None,columns=cl)
 print(df)
 
+###............for left hand mi.............
 ## extract the eeg data where motor imagery is left(2)
-ndf=df[df["MI"]==2]
+ndf2=df[df["MI"]==2]
 
 # ## remove mi column to prevent it from becoming node in dag
 # ndf = ndf.drop(["MI"], axis=1)
     
 ##apply  hillclimb search on left mi data
-hc2 = HillClimbSearch(data=df,use_cache=True)
+hc2 = HillClimbSearch(data=ndf2,use_cache=True)
 
 # #apply estimation function to find the best network structure of left mi
 bm2 = hc2.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
@@ -111,8 +112,7 @@ print(bm2.edges())
 # #drawing and saving the network structure
 # # Create a NetworkX DiGraph from the edges of your model
 G = nx.DiGraph(bm2.edges())
-pos = nx.spring_layout(G,k=1.5)  
-plt.figure(figsize=(10000, 10000)) 
+pos = nx.spring_layout(G,k=1.5)   
 nx.draw(G, pos, with_labels=True, arrows=True)
 plt.savefig("network of 1a for left hand.png")
 plt.savefig("networkof 1a for left hand.svg")
