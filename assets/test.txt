@@ -172,3 +172,71 @@ nx.draw(G, pos, with_labels=True, arrows=True)
 plt.savefig("network of 1a for rest.png")
 plt.savefig("networkof 1a for rest.svg")
 plt.show()
+
+##........................ unique edges in left hand imagery........................
+## track that a edge is present in bm2e and bm1e but not in bm4e i.e it is present in two network but not in third network
+f=0  
+## track that a edge is present in bm2e and bm4e but not in bm1e i.e it is present in two network but not in third network
+f1=0
+ecul2=[]
+for i in range (0,bm2e.shape[0],1):
+    f=0
+    f1=0
+    ## loop checks  that a edge is present in bm2e and bm1e but not in bm4e 
+    for j in range(0,bm4e.shape[0],1):
+        if (bm2e[i][0]==bm4e[j][0] or  bm2e[i][0]==bm4e[j][1]) and (bm2e[i][1]==bm4e[j][0] or  bm2e[i][1]==bm4e[j][1]) :
+            f+=1
+    ## loop checks that a edge is present in bm2e and bm4e not in bm1e
+    for k in range(0,bm1e.shape[0],1):
+        if  (bm2e[i][0]==bm1e[k][0] or  bm2e[i][0]==bm1e[k][1]) and (bm2e[i][1]==bm1e[k][0] or  bm2e[i][1]==bm1e[k][1]):
+                f1+=1
+    ## checks that edge is only present in left mi network
+    if f1==0 and f==0:
+        ecul2.append(bm2e[i])
+print("the edges which are only present or unique edges of left hand mi is : ",ecul2)
+
+##........................ unique edges in rest........................
+## track that a edge is present in bm1e and bm2e but not in bm4e i.e it is present in two network but not in third network
+f=0  
+## track that a edge is present in bm1e and bm4e but not in bm2e i.e it is present in two network but not in third network
+f1=0
+ecur1=[]
+i,j,k=0,0,0
+for i in range (0,bm1e.shape[0],1):
+    f=0
+    f1=0
+    ## loop checks  that a edge is present in  bm1e and bm2e but not in bm4e
+    for j in range(0,bm4e.shape[0],1):
+        if (bm1e[i][0]==bm4e[j][0] or  bm1e[i][0]==bm4e[j][1]) and (bm1e[i][1]==bm4e[j][0] or  bm1e[i][1]==bm4e[j][1]) :
+            f+=1
+    ## loop checks that a edge is present in bm1e and bm4e but not in bm2e
+    for k in range(0,bm2e.shape[0],1):
+        if  (bm1e[i][0]==bm2e[k][0] or  bm1e[i][0]==bm2e[k][1]) and (bm1e[i][1]==bm2e[k][0] or  bm1e[i][1]==bm2e[k][1]):
+                f1+=1
+    ## checks that edge is only present in rest network
+    if f1==0 and f==0:
+        ecur1.append(bm1e[i])
+print("the edges which are only present or unique edges of rest is : ",ecur1)
+
+##........................ unique edges in foot mi ........................
+## track that a edge is present in bm4e and bm2e but not in bm1e i.e it is present in two network but not in third network
+f=0  
+## track that a edge is present in bm4e and bm1e but not in bm2e i.e it is present in two network but not in third network
+f1=0
+ecuf4=[]
+i,j,k=0,0,0
+for i in range (0,bm4e.shape[0],1):
+    f=0
+    f1=0
+    ## loop checks  that a edge is present in  bm4e and bm2e but not in bm1e
+    for j in range(0,bm1e.shape[0],1):
+        if (bm4e[i][0]==bm1e[j][0] or  bm4e[i][0]==bm1e[j][1]) and (bm4e[i][1]==bm1e[j][0] or  bm4e[i][1]==bm1e[j][1]) :
+            f+=1
+    ## loop checks that a edge is present in bm4e and bm1e but not in bm2e
+    for k in range(0,bm2e.shape[0],1):
+        if  (bm4e[i][0]==bm2e[k][0] or  bm4e[i][0]==bm2e[k][1]) and (bm4e[i][1]==bm2e[k][0] or  bm4e[i][1]==bm2e[k][1]):
+                f1+=1
+    ## checks that edge is only present in foot mi network
+    if f1==0 and f==0:
+        ecuf4.append(bm4e[i])
+print("the edges which are only present or unique edges of foot mi is : ",ecuf4)
