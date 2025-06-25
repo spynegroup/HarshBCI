@@ -6,31 +6,32 @@ from pgmpy.estimators import HillClimbSearch
 import pandas as pd
 import scipy.io
 
+
+
 ## Load the .mat file 
-mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV_calib_ds1a.mat",struct_as_record=False, squeeze_me=True)
+# mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV_calib_ds1a.mat",struct_as_record=False, squeeze_me=True)
+mat = scipy.io.loadmat("C:\\Users\\sapta\\Documents\\GitHub\\HarshBCI\\assets\\BCIC_IV_ds1\\Hz100\\BCICIV_calib_ds1a", struct_as_record = False, squeeze_me = True)
 
 ## Extract sampling frequency and store it.
 ## Sampling frequency = 100 Hz.
-sf=mat["nfo"].fs
+sf = mat["nfo"].fs
 print(sf)
 
-##stores the eeg data of shape (190594, 59)
+## Stores the EEG data of shape (190594, 59).
 ## No. of samples = 1,90,594
 ## No. of channels = 59
-cn=mat["cnt"]
+cn = mat["cnt"]
 print(mat["cnt"])
 
-## convert eeg data into uV
-cnt=0.1*cn
-
-##extract the no of samples before each trial to elimate the data between the interleaved period
-## Extract the sample IDs of the cues.
-po=mat["mrk"].pos
+## Convert the values into uV i.e. micro volt as advised in:
+## https://www.bbci.de/competition/iv/desc_1.html
+cnt = cn.astype(float)
+cnt = 0.1*cnt
 
 ##extract the channel names from the data and store it
 ##No of channel name = 59
-clab=mat["nfo"].clab
-print((mat["nfo"].clab))
+clab = mat["nfo"].clab
+print(clab)
 
 ##calculate the no of samples taken
 print(type(cnt))
@@ -42,19 +43,36 @@ time=np.arange(ns)/sf
 print(time)
 print(type(time))
 
+
+## extract the no of samples before each trial to elimate the data between the interleaved period
+## Extract the sample IDs of the cues.
+po = mat["mrk"].pos
+
+##extract the y position of electrode to classify data according to motor imagery
+yl = mat["mrk"].y
+
+## How many class 1 cues are there
+print(np.count_nonzero(yl == 1))
+
+## How many class 2 cues are there
+print(np.count_nonzero(yl == -1))
+
+##extract the type of motor imagery chosen by the subject
+cs = mat["nfo"].classes
+
+
+
 ## make an numpy array of required column names
 ## Reruried column name include 59 channels name, time and motor imagery
 cl=np.insert(clab,[0,clab.shape[0]],["Time","MI"])
 print(cl)
 
-##extract the type of motor imagery chosen by the subject
-cs=mat["nfo"].classes
+
 
 ##access field names in mrk to understand its structure
 print(mat["mrk"]._fieldnames)
 
-##extract the y position of electrode to classify data according to motor imagery
-yl=mat["mrk"].y
+
 
 ##constructing motor imagery column in data frame to understand which task is performed 
 mi=[]
