@@ -8,8 +8,10 @@ import scipy.io
 
 
 
-## Load the .mat file 
+## Load the .mat file
+## Harsh 
 # mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV_calib_ds1a.mat",struct_as_record=False, squeeze_me=True)
+## SP
 mat = scipy.io.loadmat("C:\\Users\\sapta\\Documents\\GitHub\\HarshBCI\\assets\\BCIC_IV_ds1\\Hz100\\BCICIV_calib_ds1a", struct_as_record = False, squeeze_me = True)
 
 ## Extract sampling frequency and store it.
