@@ -241,7 +241,6 @@ ft=all_edges(dbn(t4))
 uel=unique_edges(list(le),list(ft))
 ## Find the unique edges of dynamic bayesian network for foot mi w.r.t left mi model
 uef=unique_edges(list(ft),list(le))
-<<<<<<< HEAD
 
 ## Function that check unique path 
 def unique_path(e1,e2,lp):
