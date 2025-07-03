@@ -225,15 +225,13 @@ def unique_edges(m1,m2):
         if  f==0:
             ue.append(m1[i])
     return ue
-<<<<<<< HEAD
+
 ## Function to create a csv for which the edges can be stored
 def make_csv(ed,na):
     # Convert set of edges to a DataFrame
     le_df = pd.DataFrame(list(ed), columns=["From", "To"])
     # Save to CSV
     le_df.to_csv(f'{na}_edges.csv', index=False)
-=======
->>>>>>> f2cd2f1f9e6426cde6496dadaf61025749b2e1ff
 
 ## Find the edges of dynamic bayesian network for left mi
 le=all_edges(dbn(t2))
@@ -264,5 +262,3 @@ def unique_path(e1,e2,lp):
          else:
               i=i+1
     return ( set(e1).difference(cp))
-=======
->>>>>>> f2cd2f1f9e6426cde6496dadaf61025749b2e1ff
