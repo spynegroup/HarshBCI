@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 from pgmpy.estimators import HillClimbSearch
 import pandas as pd
 import scipy.io
-
+from pgmpy.estimators import ExpertKnowledge
 
 
 ## Load the .mat file
 ## Harsh 
-# mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV_calib_ds1a.mat",struct_as_record=False, squeeze_me=True)
+mat = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV_calib_ds1a.mat",struct_as_record=False, squeeze_me=True)
 ## SP
-mat = scipy.io.loadmat("C:\\Users\\sapta\\Documents\\GitHub\\HarshBCI\\assets\\BCIC_IV_ds1\\Hz100\\BCICIV_calib_ds1a", struct_as_record = False, squeeze_me = True)
+#mat = scipy.io.loadmat("C:\\Users\\sapta\\Documents\\GitHub\\HarshBCI\\assets\\BCIC_IV_ds1\\Hz100\\BCICIV_calib_ds1a", struct_as_record = False, squeeze_me = True)
 
 ## Extract sampling frequency and store it.
 ## Sampling frequency = 100 Hz.
@@ -114,149 +114,149 @@ print(dt)
 df=pd.DataFrame(dt,index=None,columns=cl)
 print(df)
 
+## Define a function to create tensor for the two class of motor imagery        
+def tform(ndf,t):
+    i=0
+    j=0
+    k=0
+    while i < ndf.shape[0]:
+            t[k][j]=ndf.iloc[i:(i+1),0:59]
+            if j>=399:
+                j= 0
+                if k<99:
+                  k=k+1
+            else:
+                j=j+1
+            i=i+1
+    return t
+
 ###.........................for left hand mi...........................
 
 ## extract the eeg data where motor imagery is left(2)
 ndf2=df[df["MI"]==2]
 
-## remove mi column to prevent it from becoming node in dag
-ndf2 = ndf2.drop(["MI"], axis=1)
-
-##apply  hillclimb search on left mi data
-hc2 = HillClimbSearch(data=ndf2,use_cache=True)
-
-# #apply estimation function to find the best network structure of left mi
-bm2 = hc2.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
-print(bm2.edges()) 
-bm2e=np.array(bm2.edges())
-
-# #drawing and saving the network structure
-# # Create a NetworkX DiGraph from the edges of your model
-G = nx.DiGraph(bm2.edges())
-pos = nx.spring_layout(G,k=1.5)  
-nx.draw(G, pos, with_labels=True, arrows=True)
-plt.savefig("network of calib 1a for left hand.png")
-plt.savefig("network of calib 1a for left hand.svg")
-plt.show()
-
+## remove mi and time column for constuction of tensor
+ndf2 = ndf2.drop(["MI","Time"], axis=1)
 
 ##.....................for foot mi.................
 
 ## extract the eeg data where motor imagery is foot(4)
 ndf4=df[df["MI"]==4]
 
-## remove mi column to prevent it from becoming node in dag as it is constant
-ndf4 = ndf4.drop(["MI"], axis=1)
+## remove mi and time column for constuction of tensor
+ndf4 = ndf4.drop(["MI","Time"], axis=1)
 
-##apply  hillclimb search on foot mi data
-hc4 = HillClimbSearch(data=ndf4,use_cache=True)
-
-# #apply estimation function to find the best network structure of foot mi
-bm4 = hc4.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
-print(bm4.edges()) 
-bm4e=np.array(bm4.edges())
-
-# #drawing and saving the network structure
-# # Create a NetworkX DiGraph from the edges of your model
-G = nx.DiGraph(bm4.edges())
-pos = nx.spring_layout(G,k=1.5)  
-# plt.figure(figsize=(10000, 10000)) 
-nx.draw(G, pos, with_labels=True, arrows=True)
-plt.savefig("network of 1a for foot.png")
-plt.savefig("networkof 1a for foot.svg")
-plt.show()
-
-
-##.....................for rest.................
+###.........................for foot mi...........................
 
 ## extract the eeg data where motor imagery is rest(1)
 ndf1=df[df["MI"]==1]
 
-## remove mi column to prevent it from becoming node in dag and error during the development of bayesian network
-ndf1 = ndf1.drop(["MI"], axis=1)
+## Create the required tensor to store data of motor imagery
+t2=np.empty ((100, 400 ,59))
+t4=np.empty ((100, 400 ,59))
 
-##apply  hillclimb search on rest data
-hc1 = HillClimbSearch(data=ndf1,use_cache=True)
+## Create required tensor for left(2) motor imagery
+t2=tform(ndf2, t2)
 
-# #apply estimation function to find the best network structure of rest
-bm1 = hc1.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
-print(bm1.edges()) 
-bm1e=np.array(bm1.edges())
+## Create required tensor for foot (4) motor imagery
+t4=tform(ndf4, t4)
 
-# #drawing and saving the network structure
-# # Create a NetworkX DiGraph from the edges of your model
-G = nx.DiGraph(bm1.edges())
-pos = nx.spring_layout(G,k=1.5)  
-# plt.figure(figsize=(10000, 10000)) 
-nx.draw(G, pos, with_labels=True, arrows=True)
-plt.savefig("network of 1a for rest.png")
-plt.savefig("networkof 1a for rest.svg")
-plt.show()
+##Function that extracts time interval
+def time_interval(t, t1,t2):
+    return t[: , [t1,t2] , :]
 
-##........................ unique edges in left hand imagery........................
-## track that a edge is present in bm2e and bm1e but not in bm4e i.e it is present in two network but not in third network
-f=0  
-## track that a edge is present in bm2e and bm4e but not in bm1e i.e it is present in two network but not in third network
-f1=0
-ecul2=[]
-for i in range (0,bm2e.shape[0],1):
-    f=0
-    f1=0
-    ## loop checks  that a edge is present in bm2e and bm1e but not in bm4e 
-    for j in range(0,bm4e.shape[0],1):
-        if (bm2e[i][0]==bm4e[j][0] or  bm2e[i][0]==bm4e[j][1]) and (bm2e[i][1]==bm4e[j][0] or  bm2e[i][1]==bm4e[j][1]) :
-            f+=1
-    ## loop checks that a edge is present in bm2e and bm4e not in bm1e
-    for k in range(0,bm1e.shape[0],1):
-        if  (bm2e[i][0]==bm1e[k][0] or  bm2e[i][0]==bm1e[k][1]) and (bm2e[i][1]==bm1e[k][0] or  bm2e[i][1]==bm1e[k][1]):
-                f1+=1
-    ## checks that edge is only present in left mi network
-    if f1==0 and f==0:
-        ecul2.append(bm2e[i])
-print("the edges which are only present or unique edges of left hand mi is : ",ecul2)
+##Function that create the bayesian network each time when called
+def rec_bn(te,t1,t2):
+    data={}
+    for i in range(te.shape[2]):
+        data[f'{clab[i]}_t{t1}']=te[: ,0 ,i]
+        data[f'{clab[i]}_t{t2}']=te[: ,1 ,i]
+    d=pd.DataFrame(data,index=None)
+    fl=[]        # stores forbidden edges
+    for j in range(te.shape[2]):
+        for k in range(te.shape[2]):
+            fl.append((f'{clab[k]}_t{t2}',f'{clab[j]}_t{t1}'))
+            fl.append((f'{clab[j]}_t{t1}', f'{clab[k]}_t{t1}' ))
+            fl.append((f'{clab[j]}_t{t2}' ,f'{clab[k]}_t{t2}'))
+    # expert knowledge for forbidden edges        
+    ek = ExpertKnowledge(forbidden_edges=fl)
+    ## apply  hillclimb search on mi data
+    hc = HillClimbSearch(data=d,use_cache=True)
+    ## apply estimation function to find the best network structure of  mi
+    bn = hc.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True ,expert_knowledge=ek)
+    return bn
 
-##........................ unique edges in rest........................
-## track that a edge is present in bm1e and bm2e but not in bm4e i.e it is present in two network but not in third network
-f=0  
-## track that a edge is present in bm1e and bm4e but not in bm2e i.e it is present in two network but not in third network
-f1=0
-ecur1=[]
-i,j,k=0,0,0
-for i in range (0,bm1e.shape[0],1):
-    f=0
-    f1=0
-    ## loop checks  that a edge is present in  bm1e and bm2e but not in bm4e
-    for j in range(0,bm4e.shape[0],1):
-        if (bm1e[i][0]==bm4e[j][0] or  bm1e[i][0]==bm4e[j][1]) and (bm1e[i][1]==bm4e[j][0] or  bm1e[i][1]==bm4e[j][1]) :
-            f+=1
-    ## loop checks that a edge is present in bm1e and bm4e but not in bm2e
-    for k in range(0,bm2e.shape[0],1):
-        if  (bm1e[i][0]==bm2e[k][0] or  bm1e[i][0]==bm2e[k][1]) and (bm1e[i][1]==bm2e[k][0] or  bm1e[i][1]==bm2e[k][1]):
-                f1+=1
-    ## checks that edge is only present in rest network
-    if f1==0 and f==0:
-        ecur1.append(bm1e[i])
-print("the edges which are only present or unique edges of rest is : ",ecur1)
+##Function that stores the every time stored network formed and develops the dynamic  bayesian network
+def dbn(tensor):
+    dbn = []
+    for t in range(0, 399):  # (0–399) gives t and t+1
+        ste = time_interval(tensor, t, t+1)
+        bn = rec_bn(ste,t,t+1)
+        dbn.append(bn)
+    return dbn
 
-##........................ unique edges in foot mi ........................
-## track that a edge is present in bm4e and bm2e but not in bm1e i.e it is present in two network but not in third network
-f=0  
-## track that a edge is present in bm4e and bm1e but not in bm2e i.e it is present in two network but not in third network
-f1=0
-ecuf4=[]
-i,j,k=0,0,0
-for i in range (0,bm4e.shape[0],1):
-    f=0
-    f1=0
-    ## loop checks  that a edge is present in  bm4e and bm2e but not in bm1e
-    for j in range(0,bm1e.shape[0],1):
-        if (bm4e[i][0]==bm1e[j][0] or  bm4e[i][0]==bm1e[j][1]) and (bm4e[i][1]==bm1e[j][0] or  bm4e[i][1]==bm1e[j][1]) :
-            f+=1
-    ## loop checks that a edge is present in bm4e and bm1e but not in bm2e
-    for k in range(0,bm2e.shape[0],1):
-        if  (bm4e[i][0]==bm2e[k][0] or  bm4e[i][0]==bm2e[k][1]) and (bm4e[i][1]==bm2e[k][0] or  bm4e[i][1]==bm2e[k][1]):
-                f1+=1
-    ## checks that edge is only present in foot mi network
-    if f1==0 and f==0:
-        ecuf4.append(bm4e[i])
-print("the edges which are only present or unique edges of foot mi is : ",ecuf4)
+##Extract the edges of the model
+def all_edges(dbn_list):
+    edges = set()
+    for model in dbn_list:
+        edges.update(model.edges())
+    return edges
+
+# # Function for drawing and saving the network structure
+def draw(m , na):
+    G = nx.DiGraph(m)
+    pos = nx.spring_layout(G,k=1.5)  
+    # plt.figure(figsize=(10000, 10000)) 
+    nx.draw(G, pos, with_labels=True, arrows=True)
+    plt.savefig(f'network of 1a {na} .png')
+    plt.savefig("networkof 1a {na} .svg")
+    plt.show()
+
+## Function that find unique edges in m1 with respect to m2
+def unique_edges(m1,m2):
+    f=0  
+    ue=[]
+    for i in range (0,len(m1),1):
+        f=0
+        ## loop checks  that a edge is present in m1  but not in m2
+        for j in range(0,len(m2),1):
+            if (list(m1)[i][0]==list(m2)[j][0] or  list(m1)[i][0]==list(m2)[j][1]) and (list(m1)[i][1]==list(m2)[j][0] or  list(m1)[i][1]==list(m2)[j][1]) :
+                f+=1
+        if  f==0:
+            ue.append(m1[i])
+    return ue
+## Function to create a csv for which the edges can be stored
+def make_csv(ed,na):
+    # Convert set of edges to a DataFrame
+    le_df = pd.DataFrame(list(ed), columns=["From", "To"])
+    # Save to CSV
+    le_df.to_csv(f'{na}_edges.csv', index=False)
+
+## Find the edges of dynamic bayesian network for left mi
+le=all_edges(dbn(t2))
+## Find the edges of dynamic bayesian network for foot mi
+ft=all_edges(dbn(t4))
+## Find the unique edges of dynamic bayesian network for left mi w.r.t foot mi model
+uel=unique_edges(list(le),list(ft))
+## Find the unique edges of dynamic bayesian network for foot mi w.r.t left mi model
+uef=unique_edges(list(ft),list(le))
+
+## Function that check unique path 
+def unique_path(e1,e2,lp):
+    cp=set()
+    i=0 
+    j=0 
+    while i<len(e1):
+         j=0
+         f=0
+         while j<len(e2):
+            if i+lp<len(e1) and j+lp<len(e2):
+               if e1[i:i+lp]==e2[j:j+lp]:
+                  cp.add(tuple(e2[j:j+lp]))
+                  f=f+1
+            j=j+1
+         if f>0:
+             i=i+lp
+         else:
+              i=i+1
+    return ( set(e1).difference(cp))
