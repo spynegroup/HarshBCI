@@ -260,5 +260,5 @@ def unique_path(e1,e2,lp):
              i=i+lp
          else:
               i=i+1
-    return ( set(e1).difference(cp))
+    return cp
 
