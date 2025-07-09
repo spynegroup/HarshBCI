@@ -212,20 +212,6 @@ def draw(m , na):
     plt.savefig("networkof 1a {na} .svg")
     plt.show()
 
-## Function that find unique edges in m1 with respect to m2
-def unique_edges(m1,m2):
-    f=0  
-    ue=[]
-    for i in range (0,len(m1),1):
-        f=0
-        ## loop checks  that a edge is present in m1  but not in m2
-        for j in range(0,len(m2),1):
-            if (list(m1)[i][0]==list(m2)[j][0] or  list(m1)[i][0]==list(m2)[j][1]) and (list(m1)[i][1]==list(m2)[j][0] or  list(m1)[i][1]==list(m2)[j][1]) :
-                f+=1
-        if  f==0:
-            ue.append(m1[i])
-    return ue
-
 ## Function to create a csv for which the edges can be stored
 def make_csv(ed,na):
     # Convert set of edges to a DataFrame
@@ -237,10 +223,6 @@ def make_csv(ed,na):
 le=all_edges(dbn(t2))
 ## Find the edges of dynamic bayesian network for foot mi
 ft=all_edges(dbn(t4))
-## Find the unique edges of dynamic bayesian network for left mi w.r.t foot mi model
-uel=unique_edges(list(le),list(ft))
-## Find the unique edges of dynamic bayesian network for foot mi w.r.t left mi model
-uef=unique_edges(list(ft),list(le))
 
 ## Function that check unique path 
 def unique_path(e1,e2,lp):
@@ -262,3 +244,40 @@ def unique_path(e1,e2,lp):
               i=i+1
     return cp
 
+## Function that find unique edges in m1 with respect to m2
+def unique_edges(m1,m2):
+    f=0  
+    ue=[]
+    for i in range (0,len(m1),1):
+        f=0
+        ## loop checks  that a edge is present in m1  but not in m2
+        for j in range(0,len(m2),1):
+            if ( m1[i][0]==m2[j][0] or  m1[i][0]==m2[j][1]) and ( m1[i][1]==m2[j][0] or  m1[i][1]==m2[j][1]) :
+                f+=1
+            if f>0:
+                break
+        if  f==0:
+            ue.append(m1[i])
+    return ue
+
+## Create dataframe based on left edges
+dl=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\github\HarshBCI\left_edges.csv")
+## Remove the index column
+dl = dl.drop(["Unnamed: 0"], axis=1)
+
+## Create dataframe based on foot edges
+df=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\github\HarshBCI\foot edges of 1a.csv")
+
+## Find the unique edges of dynamic bayesian network for left mi w.r.t foot mi model
+uel=unique_edges(dl.values,df.values)
+## Find the unique edges of dynamic bayesian network for foot mi w.r.t left mi model
+uef=unique_edges(df.values,dl.values)
+
+## Create dataframe based on unique foot edges
+dfuf=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\github\HarshBCI\unique foot MI edges of 1a's .csv")
+
+## Create dataframe based on unique left  edges
+dful=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\github\HarshBCI\unique left MI edges of 1a's .csv")
+
+
+##...............................FOR TEST DATA...........................................
