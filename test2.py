@@ -279,5 +279,75 @@ dfuf=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\github\Harsh
 ## Create dataframe based on unique left  edges
 dful=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\github\HarshBCI\unique left MI edges of 1a's .csv")
 
+##convert the unique foot edges dataframe to list
+ufe=dfuf.values.tolist()
+##convert the unique foot edges dataframe to list
+ule=dful.values.tolist()
 
+##method to divide unique edges into bin and find  edges without temporal dependency (b0,b1,b2,b3,ue)
+def edge_bin(u):
+     ue=set()
+     b0=set()
+     b1=set()
+     b2=set()
+     b3=set()
+     for i in range(len(u)):
+         ue.add((u[i][0].split("_")[0],u[i][1].split("_")[0]))
+         if 0<=int(u[i][0].split("_")[1][1:])<100:
+             b0.add((u[i][0].split("_")[0],u[i][1].split("_")[0]))
+         elif 99<int(u[i][0].split("_")[1][1:])<200:
+             b1.add((u[i][0].split("_")[0],u[i][1].split("_")[0]))
+         elif 199<int(u[i][0].split("_")[1][1:])<300:
+             b2.add((u[i][0].split("_")[0],u[i][1].split("_")[0]))
+         elif 299<int(u[i][0].split("_")[1][1:])<400:
+             b3.add((u[i][0].split("_")[0],u[i][1].split("_")[0]))
+     return b0,b1,b2,b3,ue
+
+##bin - wise unique edges , edges without temporal dependency  and bin - wise temporal edges for left
+lb0,lb1,lb2,lb3,ltfe=edge_bin(ule)
+##bin - wise unique edges , edges without temporal dependency and and bin - wise temporal edges for foot
+fb0,fb1,fb2,fb3,ftfe=edge_bin(ufe)
+##completely temporal free unique edges of left wrt foot
+cule=ltfe-ftfe
+##completely temporal free unique edges of foot wrt left
+cufe=ftfe-ltfe
+
+def shd(tg, lg):
+    g1 = set(tg)
+    g2 = set(lg)
+    
+    # Directed edge mismatches (insertion + deletion)
+    insertions = g2 - g1
+    deletions = g1 - g2
+    
+    # Check for edge reversals
+    flips = set()
+    for u, v in deletions.copy():  # only check those missing in G2
+        if (v, u) in insertions:
+            flips.add((u, v))
+            insertions.remove((v, u))
+            deletions.remove((u, v))
+
+    shd = len(insertions) + len(deletions) + len(flips)
+    return shd
+
+ 
 ##...............................FOR TEST DATA...........................................
+m = scipy.io.loadmat("C:/Users/harsh/Desktop/BAYESIAN NETWORK/DATASET 1/BCICIV_eval_ds1a.mat",struct_as_record=False, squeeze_me=True)
+cnte = m["cnt"].astype(float)
+cnte = 0.1*cnte
+d= pd.DataFrame(cnte, columns=m["nfo"].clab)
+cl=[]
+for i in range (0,int(cnte.shape[0]),100):
+    be=set()
+    if i + 100 < cnte.shape[0]:
+         da = pd.DataFrame(cnte[i:i+100], columns=m["nfo"].clab)
+         # da["original_index"] = np.arange(i, i+400)
+    print(da)
+    h = HillClimbSearch(da,use_cache=True)
+    ## apply estimation function to find the best network structure of  mi
+    b = h.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
+    be=set(b.edges())
+    cl.append((f"t{i}_to_t{i+100}","left",len(be&lb0),len(be&lb1),len(be&lb2),len(be&lb3),len(be&cule),shd(lb0,be),shd(lb1,be),shd(lb2,be),shd(lb3,be)))
+    cl.append((f"t{i}_to_t{i+100}","foot",len(be&fb0),len(be&fb1),len(be&fb2),len(be&fb3),len(be&cufe),shd(fb0,be),shd(fb1,be),shd(fb2,be),shd(fb3,be)))
+    
