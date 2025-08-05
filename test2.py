@@ -151,6 +151,10 @@ ndf4 = ndf4.drop(["MI","Time"], axis=1)
 ## extract the eeg data where motor imagery is rest(1)
 ndf1=df[df["MI"]==1]
 
+
+## remove mi and time column for constuction of tensor
+ndf1 = ndf1.drop(["MI","Time"], axis=1)
+
 ## Create the required tensor to store data of motor imagery
 t2=np.empty ((100, 400 ,59))
 t4=np.empty ((100, 400 ,59))
@@ -349,5 +353,142 @@ for i in range (0,int(cnte.shape[0]),100):
     b = h.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
     be=set(b.edges())
     cl.append((f"t{i}_to_t{i+100}","left",len(be&lb0),len(be&lb1),len(be&lb2),len(be&lb3),len(be&cule),shd(lb0,be),shd(lb1,be),shd(lb2,be),shd(lb3,be)))
-    cl.append((f"t{i}_to_t{i+100}","foot",len(be&fb0),len(be&fb1),len(be&fb2),len(be&fb3),len(be&cufe),shd(fb0,be),shd(fb1,be),shd(fb2,be),shd(fb3,be)))
+    cl.append((f"t{i}_to_t{i+100}","foot",len(be&fb0),len(be&fb1),len(be&fb2),len(be&fb3),len(be&cufe),shd(fb0,be),shd(fb1,be),shd(fb2,be),shd(fb3,be)))   
+sbmec=sorted(cl, key=lambda x: sum(x[2:6]),reverse=True)
+sbmshd=sorted(cl, key=lambda x: sum(x[7:11]),reverse=False)
+
+
+
+
+
+
+
+  
     
+ad=[]    
+## for testing rest
+for i in range (0,500,100):
+    be=set()
+    if i+100<ndf1.shape[0]:
+      h = HillClimbSearch(ndf1.iloc[i:i+100],use_cache=True)
+    ## apply estimation function to find the best network structure of  mi
+    b = h.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
+    be=set(b.edges())
+    cl.append((f"t{i}_to_t{i+100}","left",len(be&lb0),len(be&lb1),len(be&lb2),len(be&lb3),len(be&cule),shd(lb0,be),shd(lb1,be),shd(lb2,be),shd(lb3,be)))
+    ad.append((f"t{i}_to_t{i+100}","left",len(be&lb0)+len(be&lb1)+len(be&lb2)+len(be&lb3),shd(lb0,be)+shd(lb1,be)+shd(lb2,be)+shd(lb3,be),"rest"))
+    cl.append((f"t{i}_to_t{i+100}","foot",len(be&fb0),len(be&fb1),len(be&fb2),len(be&fb3),len(be&cufe),shd(fb0,be),shd(fb1,be),shd(fb2,be),shd(fb3,be)))
+    ad.append((f"t{i}_to_t{i+100}","foot",len(be&fb0)+len(be&fb1)+len(be&fb2)+len(be&fb3),shd(fb0,be)+shd(fb1,be)+shd(fb2,be)+shd(fb3,be),"rest"))
+
+
+import networkx as nx
+from dodiscover.metrics import structure_hamming_dist
+## for testing left
+for i in range (200,400,100):
+    be=set()
+    if i+100<ndf2.shape[0]:
+      h = HillClimbSearch(ndf2.iloc[i:i+100],use_cache=True)
+    ## apply estimation function to find the best network structure of  mi
+    b = h.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
+    be=set(b.edges())
+    cl.append((f"t{i}_to_t{i+100}","left",len((be-lb0)-(be-fb0)),len((be-lb1)-(be-fb1)),len((be-lb2)-(be-fb2)),len((be-lb3)-(be-fb3)),len(be-cule), structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be))))
+    ad.append((f"t{i}_to_t{i+100}","left",len((be-lb0)-(be-fb0))+len((be-lb1)-(be-fb1))+len((be-lb2)-(be-fb2))+len((be-lb3)-(be-fb3)),structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be)),"left"))
+    cl.append((f"t{i}_to_t{i+100}","foot",len((be-fb0)-(be-lb0)),len((be-fb1)-(be-lb1)),len((be-fb2)-(be-lb2)),len((be-fb3)-(be-lb3)),len(be-cufe),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be))))
+    ad.append((f"t{i}_to_t{i+100}","foot",len((be-fb0)-(be-lb0))+len((be-fb1)-(be-lb1))+len((be-fb2)-(be-lb2))+len((be-fb3)-(be-lb3)),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be)),"left"))
+    # cl.append((f"t{i}_to_t{i+100}","left",len(be-lb0),len(be-lb1),len(be-lb2),len(be-lb3),len(be-cule), structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be))))
+    # ad.append((f"t{i}_to_t{i+100}","left",len(be-lb0)+len(be-lb1)+len(be-lb2)+len(be-lb3),structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be)),"left"))
+    # cl.append((f"t{i}_to_t{i+100}","foot",len(be-fb0),len(be-fb1),len(be-fb2),len(be-fb3),len(be-cufe),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be))))
+    # ad.append((f"t{i}_to_t{i+100}","foot",len(be-fb0)+len(be-fb1)+len(be-fb2)+len(be-fb3),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be)),"left"))
+    # # cl.append((f"t{i}_to_t{i+100}","left",len(be&lb0),len(be&lb1),len(be&lb2),len(be&lb3),len(be&cule),shd(lb0,be),shd(lb1,be),shd(lb2,be),shd(lb3,be)))
+    # ad.append((f"t{i}_to_t{i+100}","left",len(be&lb0)+len(be&lb1)+len(be&lb2)+len(be&lb3),shd(lb0,be)+shd(lb1,be)+shd(lb2,be)+shd(lb3,be),"left"))
+    # cl.append((f"t{i}_to_t{i+100}","foot",len(be&fb0),len(be&fb1),len(be&fb2),len(be&fb3),len(be&cufe),shd(fb0,be),shd(fb1,be),shd(fb2,be),shd(fb3,be)))
+    # ad.append((f"t{i}_to_t{i+100}","foot",len(be&fb0)+len(be&fb1)+len(be&fb2)+len(be&fb3),shd(fb0,be)+shd(fb1,be)+shd(fb2,be)+shd(fb3,be),"left"))
+adl = pd.DataFrame(ad, columns=["Time interval ID", "Expected MI","Total Edges Match","Total SHD","True MI"])   
+## for testing foot
+for i in range (200,400,100):
+    be=set()
+    if i+100<ndf4.shape[0]:
+      h = HillClimbSearch(ndf4.iloc[i:i+100],use_cache=True)
+    ## apply estimation function to find the best network structure of  mi
+    b = h.estimate(scoring_method='bic-g',max_indegree=3,show_progress=True)
+    be=set(b.edges())
+    cl.append((f"t{i}_to_t{i+100}","left",len(be-lb0),len(be-lb1),len(be-lb2),len(be-lb3),len(be-cule), structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be))))
+    ad.append((f"t{i}_to_t{i+100}","left",len(be-lb0)+len(be-lb1)+len(be-lb2)+len(be-lb3),structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be)),"foot"))
+    cl.append((f"t{i}_to_t{i+100}","foot",len(be-fb0),len(be-fb1),len(be-fb2),len(be-fb3),len(be-cufe),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be))))
+    ad.append((f"t{i}_to_t{i+100}","foot",len(be-fb0)+len(be-fb1)+len(be-fb2)+len(be-fb3),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be)),"foot"))
+    # cl.append((f"t{i}_to_t{i+100}","left",len((be-lb0)-(be-fb0)),len((be-lb1)-(be-fb1)),len((be-lb2)-(be-fb2)),len((be-lb3)-(be-fb3)),len(be-cule), structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be))))
+    # ad.append((f"t{i}_to_t{i+100}","left",len((be-lb0)-(be-fb0))+len((be-lb1)-(be-fb1))+len((be-lb2)-(be-fb2))+len((be-lb3)-(be-fb3)),structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be)),"foot"))
+    # cl.append((f"t{i}_to_t{i+100}","foot",len((be-fb0)-(be-lb0)),len((be-fb1)-(be-lb1)),len((be-fb2)-(be-lb2)),len((be-fb3)-(be-lb3)),len(be-cufe),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be))))
+    # ad.append((f"t{i}_to_t{i+100}","foot",len((be-fb0)-(be-lb0))+len((be-fb1)-(be-lb1))+len((be-fb2)-(be-lb2))+len((be-fb3)-(be-lb3)),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be)),"foot"))
+    # cl.append((f"t{i}_to_t{i+100}","left",len(be&lb0),len(be&lb1),len(be&lb2),len(be&lb3),len(be&cule), structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be))))
+    # ad.append((f"t{i}_to_t{i+100}","left",len(be&lb0)+len(be&lb1)+len(be&lb2)+len(be&lb3),structure_hamming_dist(nx.DiGraph(lb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(lb3),nx.DiGraph(be)),"foot"))
+    # cl.append((f"t{i}_to_t{i+100}","foot",len(be&fb0),len(be&fb1),len(be&fb2),len(be&fb3),len(be&cufe),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be)),structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be))))
+    # ad.append((f"t{i}_to_t{i+100}","foot",len(be&fb0)+len(be&fb1)+len(be&fb2)+len(be&fb3),structure_hamming_dist(nx.DiGraph(fb0),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb1),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb2),nx.DiGraph(be))+structure_hamming_dist(nx.DiGraph(fb3),nx.DiGraph(be)),"foot"))
+
+ha=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\detailed Analysis for classifier for left and foot MI.csv")
+h=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\Analysis for classifier for left and foot MI.csv")
+##machine learning
+haa=ha
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+
+# 1. Prepare the data
+haa = ha.copy()  # Assuming 'ha' is your labeled DataFrame
+
+# Extract features and labels
+X = haa.iloc[:, 2:6].copy()
+X['unique_edge_match'] = haa.iloc[:, 6]
+X['SHD_bin0'] = haa.iloc[:, 7]
+X['SHD_bin1'] = haa.iloc[:, 8]
+X['SHD_bin2'] = haa.iloc[:, 9]
+X['SHD_bin3'] = haa.iloc[:, 10]
+
+y = haa['Expected MI']
+
+# Encode labels
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)  # e.g., foot=1, left=0
+
+# 2. Split into training and testing
+X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.3, random_state=42)
+
+# 3. Train the classifier
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
+
+# 4. Predict on test set
+y_pred = clf.predict(X_test)
+
+# 5. Evaluate
+print("RandomForest Accuracy: {:.2f}%".format(accuracy_score(y_test, y_pred)*100))
+print("\nClassification Report:\n", classification_report(y_test, y_pred, target_names=le.classes_))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+# 6. If you want to predict on full data again:
+haa['Predicted MI'] = le.inverse_transform(clf.predict(X))
+
+#for test
+har=pd.read_csv(r"C:\Users\harsh\OneDrive\Desktop\BAYESIAN NETWORK\detailed Analysis for classifier for foot of extra 5 samples.csv")
+# Step 1: Extract features from 'har' DataFrame
+X_har = har.iloc[:, 2:6].copy()  # SHD Left/Foot + Total Edge Match
+X_har['unique_edge_match'] = har.iloc[:, 6]
+X_har['SHD_bin0'] = har.iloc[:, 7]
+X_har['SHD_bin1'] = har.iloc[:, 8]
+X_har['SHD_bin2'] = har.iloc[:, 9]
+X_har['SHD_bin3'] = har.iloc[:, 10]
+
+# Step 2: Predict using trained model
+y_pred_har = clf.predict(X_har)
+
+# Step 3: Decode predicted labels
+pred_labels_har = le.inverse_transform(y_pred_har)
+
+# Step 4: Add predictions to the har DataFrame
+har['Predicted MI'] = pred_labels_har
+
+# Step 5 (Optional): Evaluate accuracy if true labels exist
+if 'Expected MI' in har.columns:
+    y_true = le.transform(har['Expected MI'])
+    accuracy = (y_true == y_pred_har).mean()
+    print(f"Test Accuracy on har: {accuracy:.2%}")
