@@ -1,4 +1,4 @@
 <p align="center">
-  <strong>CLASSIFYING BRAIN SIGNALS FOR THE DEVELOPMENT OF BRAIN-COMPUTER INTERFACE (BCI)-GUIDED SMART PROSTHETIC LIMBS</strong>
+  <strong>Classifying Brain Signals for the Development of Brain-Computer Interface (BCI)-Guided Smart Prosthetic Limbs</strong>
 </p>
-HERE I TRIED TO DEVELOP A CLASSIFIER BETWEEN THEN FOLLOWING PAIR OF MOTOR IMAGERY ( RIGHT HAND , LEFT HAND AND FOOT ) ALONG WITH REST.
+Here i tried to develop a classifier between the following pairs of motor imagery (right hand, left hand, and foot) along with rest.
